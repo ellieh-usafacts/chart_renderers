@@ -4,185 +4,23 @@
   <meta charset="utf-8" />
   <title>LangSmith Chart Renderer</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 16px;
-      font-family: sans-serif;
-      background: #f7f7f3;
-    }
-    #title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    #subtitle { font-size: 13px; color: #555; margin-bottom: 12px; }
-    #chart { width: 100%; height: 400px; display: none; }
-    #reference-label {
-      display: none;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #888;
-      margin-top: 12px;
-      margin-bottom: 6px;
-    }
-    #reference {
-      display: none;
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 12px 16px;
-      font-size: 12px;
-      font-family: monospace;
-      white-space: pre;
-      overflow: auto;
-      max-height: 400px;
-      color: #333;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; }
+    iframe { width: 100%; height: 100vh; border: none; display: block; }
   </style>
 </head>
 <body>
-  <div id="title"></div>
-  <div id="subtitle"></div>
-  <div id="chart"></div>
-  <div id="reference-label">Expected output</div>
-  <div id="reference"></div>
-
   <script>
-    /**
-     * LangSmith Custom Output Renderer — ECharts / Vega-Lite / Flourish
-     *
-     * LangSmith loads this page in an iframe and POSTs each run's output via
-     * window.postMessage with the shape:
-     *
-     *   { type: "output" | "reference",
-     *     data: { chart_spec, chart_library, wrapper: { title, subtitle } } }
-     *
-     * chart_library drives which JS bundle is loaded and which init path runs.
-     * Scripts are loaded lazily so only the needed bundle is fetched.
-     */
-
-    var FLOURISH_API_KEY = 'J2oZ6_eTv3YZoZGeRjO70YBe4d9hhLh8OjvFIqwmSn0y6_nGNY3W4gyoBCTZxY6z';
-
-    // LangSmith retries postMessage up to 6 times — guard so we only render once.
-    var rendered = false;
-
-    function loadScript(src, cb) {
-      var s = document.createElement('script');
-      s.src = src;
-      s.onload = cb;
-      document.head.appendChild(s);
-    }
-
-    function setTitles(wrapper) {
-      document.getElementById('title').textContent    = (wrapper && wrapper.title)    || '';
-      document.getElementById('subtitle').textContent = (wrapper && wrapper.subtitle) || '';
-    }
-
-    function showChart() {
-      document.getElementById('chart').style.display = 'block';
-    }
-
-    function renderECharts(spec, wrapper) {
-      loadScript('https://cdn.jsdelivr.net/npm/echarts@5.0.0/dist/echarts.min.js', function () {
-        setTitles(wrapper);
-        showChart();
-        echarts.init(document.getElementById('chart')).setOption(spec);
-      });
-    }
-
-    function renderVegaLite(spec, wrapper) {
-      loadScript('https://cdn.jsdelivr.net/npm/vega@6.2.0', function () {
-        loadScript('https://cdn.jsdelivr.net/npm/vega-lite@6.4.2', function () {
-          loadScript('https://cdn.jsdelivr.net/npm/vega-embed@7.1.0', function () {
-            setTitles(wrapper);
-            showChart();
-            var sized = Object.assign({}, spec, {
-              width:    'container',
-              height:   'container',
-              autosize: { type: 'fit', contains: 'padding' },
-            });
-            vegaEmbed('#chart', sized);
-          });
-        });
-      });
-    }
-
-    function renderChartJS(html, wrapper) {
-      var el = document.getElementById('chart');
-      el.style.display = 'block';
-      var iframe = document.createElement('iframe');
-      iframe.style.width  = '100%';
-      iframe.style.border = 'none';
-      if (!wrapper) {
-        iframe.style.height = 'calc(100vh - 32px)';
-      } else {
-        iframe.style.height = (el.getBoundingClientRect().height || 400) + 'px';
-      }
-      iframe.srcdoc = html;
-      el.appendChild(iframe);
-    }
-
-    function renderFlourish(spec, wrapper) {
-      loadScript('https://cdn.flourish.rocks/flourish-live-v5.1.0.min.js', function () {
-        setTitles(wrapper);
-        showChart();
-        var el = document.getElementById('chart');
-        var h  = el.getBoundingClientRect().height || 400;
-        new Flourish.Live({
-          base_visualisation_id: spec.base_visualisation_id,
-          data:                  spec.data,
-          state:                 spec.state,
-          bindings:              spec.bindings,
-          metadata:              spec.metadata,
-          api_key:               FLOURISH_API_KEY,
-          container:             '#chart',
-          height:                h,
-        });
-      });
-    }
-
     window.addEventListener('message', function (event) {
       var msg = event.data;
-      if (!msg) return;
+      if (!msg || msg.type !== 'output') return;
 
-      if (msg.type === 'output') {
-        if (rendered) return;
-        rendered = true;
+      var html = (msg.data || {}).chart_html;
+      if (!html) return;
 
-        var data    = msg.data || {};
-        var wrapper = data.wrapper || null;
-        var lib     = data.chart_library || 'echarts';
-
-        if (lib === 'chartjs') {
-          var html = data.chart_html;
-          if (!html) return;
-          renderChartJS(html, wrapper);
-        } else {
-          var spec = data.chart_spec;
-          if (!spec) return;
-          if (lib === 'vegalite') {
-            renderVegaLite(spec, wrapper);
-          } else if (lib === 'flourish') {
-            renderFlourish(spec, wrapper);
-          } else {
-            renderECharts(spec, wrapper);
-          }
-        }
-
-      } else if (msg.type === 'reference') {
-        var ref = msg.data;
-        if (ref && Object.keys(ref).length > 0) {
-          document.getElementById('reference-label').style.display = 'block';
-          var el = document.getElementById('reference');
-          el.style.display  = 'block';
-          el.textContent    = JSON.stringify(ref, null, 2);
-        }
-      }
-    });
-
-    window.addEventListener('resize', function () {
-      // echarts needs an explicit resize call; vega-embed and flourish are responsive
-      var el = document.getElementById('chart');
-      if (el._echartsInstance) { el._echartsInstance.resize(); }
+      var iframe = document.createElement('iframe');
+      iframe.srcdoc = html;
+      document.body.appendChild(iframe);
     });
   </script>
 </body>
