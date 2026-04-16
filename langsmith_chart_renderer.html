@@ -106,6 +106,18 @@
       });
     }
 
+    function renderChartJS(html, wrapper) {
+      setTitles(wrapper);
+      var el = document.getElementById('chart');
+      el.style.display = 'block';
+      var iframe = document.createElement('iframe');
+      iframe.style.width  = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.srcdoc = html;
+      el.appendChild(iframe);
+    }
+
     function renderFlourish(spec, wrapper) {
       loadScript('https://cdn.flourish.rocks/flourish-live-v5.1.0.min.js', function () {
         setTitles(wrapper);
@@ -133,19 +145,24 @@
         if (rendered) return;
         rendered = true;
 
-        var data = msg.data || {};
-        var spec = data.chart_spec;
-        if (!spec) return;
-
+        var data    = msg.data || {};
         var wrapper = data.wrapper || null;
         var lib     = data.chart_library || 'echarts';
 
-        if (lib === 'vegalite') {
-          renderVegaLite(spec, wrapper);
-        } else if (lib === 'flourish') {
-          renderFlourish(spec, wrapper);
+        if (lib === 'chartjs') {
+          var html = data.chart_html;
+          if (!html) return;
+          renderChartJS(html, wrapper);
         } else {
-          renderECharts(spec, wrapper);
+          var spec = data.chart_spec;
+          if (!spec) return;
+          if (lib === 'vegalite') {
+            renderVegaLite(spec, wrapper);
+          } else if (lib === 'flourish') {
+            renderFlourish(spec, wrapper);
+          } else {
+            renderECharts(spec, wrapper);
+          }
         }
 
       } else if (msg.type === 'reference') {
