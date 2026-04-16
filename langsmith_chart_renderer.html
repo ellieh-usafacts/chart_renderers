@@ -106,8 +106,7 @@
       });
     }
 
-    function renderChartJS(html, wrapper) {
-      setTitles(wrapper);
+    function renderChartJS(html) {
       var el = document.getElementById('chart');
       el.style.display = 'block';
       var iframe = document.createElement('iframe');
@@ -152,7 +151,7 @@
         if (lib === 'chartjs') {
           var html = data.chart_html;
           if (!html) return;
-          renderChartJS(html, wrapper);
+          renderChartJS(html);
         } else {
           var spec = data.chart_spec;
           if (!spec) return;
