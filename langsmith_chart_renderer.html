@@ -106,13 +106,17 @@
       });
     }
 
-    function renderChartJS(html) {
+    function renderChartJS(html, wrapper) {
       var el = document.getElementById('chart');
       el.style.display = 'block';
       var iframe = document.createElement('iframe');
       iframe.style.width  = '100%';
-      iframe.style.height = '400px';
       iframe.style.border = 'none';
+      if (!wrapper) {
+        iframe.style.height = 'calc(100vh - 32px)';
+      } else {
+        iframe.style.height = (el.getBoundingClientRect().height || 400) + 'px';
+      }
       iframe.srcdoc = html;
       el.appendChild(iframe);
     }
@@ -151,7 +155,7 @@
         if (lib === 'chartjs') {
           var html = data.chart_html;
           if (!html) return;
-          renderChartJS(html);
+          renderChartJS(html, wrapper);
         } else {
           var spec = data.chart_spec;
           if (!spec) return;
