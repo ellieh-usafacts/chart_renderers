@@ -11,12 +11,15 @@
 </head>
 <body>
   <script>
+    var lastHtml = null;
+
     window.addEventListener('message', function (event) {
       var msg = event.data;
       if (!msg || msg.type !== 'output') return;
 
       var html = (msg.data || {}).chart_html;
-      if (!html) return;
+      if (!html || html === lastHtml) return;
+      lastHtml = html;
 
       var existing = document.querySelector('iframe');
       if (existing) {
