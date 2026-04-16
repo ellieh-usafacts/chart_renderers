@@ -11,19 +11,21 @@
 </head>
 <body>
   <script>
-    var rendered = false;
     window.addEventListener('message', function (event) {
-      if (rendered) return;
       var msg = event.data;
       if (!msg || msg.type !== 'output') return;
 
       var html = (msg.data || {}).chart_html;
       if (!html) return;
 
-      rendered = true;
-      var iframe = document.createElement('iframe');
-      iframe.srcdoc = html;
-      document.body.appendChild(iframe);
+      var existing = document.querySelector('iframe');
+      if (existing) {
+        existing.srcdoc = html;
+      } else {
+        var iframe = document.createElement('iframe');
+        iframe.srcdoc = html;
+        document.body.appendChild(iframe);
+      }
     });
   </script>
 </body>
