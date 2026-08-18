@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LangSmith Chart Renderer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
+</head>
+<body>
+  <script>
+    /**
+     * LangSmith Custom Output Renderer — Flourish chart card.
+     *
+     * LangSmith loads this page in an iframe and posts each run's output via
+     * window.postMessage with the shape:
+     *
+     *   { type: "output", data: { chart_json: { wrapper_data, chart_data } } }
+     *
+     * CHART_TEMPLATE is chart.html with the Aeonik woff2 already inlined at build
+     * time; $wrapper_data / $chart_data / $flourish_api_key are filled in here and
+     * the result is handed to an iframe srcdoc.
+     */
+
+    var CHART_TEMPLATE = "__CHART_TEMPLATE__";
+
+    var FLOURISH_API_KEY = 'J2oZ6_eTv3YZoZGeRjO70YBe4d9hhLh8OjvFIqwmSn0y6_nGNY3W4gyoBCTZxY6z';
+
+    // LangSmith retries postMessage — only rebuild when the payload actually changes.
+    var lastKey = null;
+
+    // Single pass with a function replacement: a string replacement would expand
+    // $&, $` and $' inside the chart data as capture references, and sequential
+    // replaces would rescan injected data for later placeholders.
+    function fill(tpl, vars) {
+      return tpl.replace(/\$(wrapper_data|chart_data|flourish_api_key)\b/g, function (m, name) {
+        return vars[name];
+      });
+    }
+
+    // A closing script tag inside any string value would end the srcdoc's script block.
+    function jsonLiteral(value) {
+      return JSON.stringify(value).replace(/<\//g, '<\\/');
+    }
+
+    window.addEventListener('message', function (event) {
+      var msg = event.data;
+      if (!msg || msg.type !== 'output') return;
+
+      var payload = (msg.data || {}).chart_json;
+      if (!payload) return;
+
+      var key = JSON.stringify(payload);
+      if (key === lastKey) return;
+      lastKey = key;
+
+      var html = fill(CHART_TEMPLATE, {
+        wrapper_data:     jsonLiteral(payload.wrapper_data || {}),
+        chart_data:       jsonLiteral(payload.chart_data || {}),
+        flourish_api_key: FLOURISH_API_KEY,
+      });
+
+      var existing = document.querySelector('iframe');
+      if (existing) {
+        existing.srcdoc = html;
+      } else {
+        var iframe = document.createElement('iframe');
+        iframe.srcdoc = html;
+        document.body.appendChild(iframe);
+      }
+    });
+  </script>
+</body>
+</html>

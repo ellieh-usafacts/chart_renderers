@@ -1,0 +1,28 @@
+{
+  "wrapper_data": {
+    "title": "Federal spending on R&D, 1976-2024 </script> & $& \"quoted\"",
+    "subtitle": "Adversarial subtitle: 100% of $&, $` and $' must survive templating"
+  },
+  "chart_data": {
+    "base_visualisation_id": "12417",
+    "data": {
+      "data": [
+        ["Year", "Defense", "Nondefense"],
+        ["2019", "58.6", "60.1"],
+        ["2020", "61.2", "66.4"],
+        ["2021", "63.9", "71.8"],
+        ["2022", "66.1", "74.2"],
+        ["2023", "68.4", "76.9"],
+        ["2024", "70.2", "79.3"]
+      ]
+    },
+    "bindings": {
+      "data": {
+        "label": 0,
+        "value": [1, 2]
+      }
+    },
+    "metadata": {},
+    "state": {}
+  }
+}

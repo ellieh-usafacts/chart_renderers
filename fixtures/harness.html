@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Renderer harness</title>
+  <style>
+    body { margin: 0; padding: 12px; font: 13px/1.4 sans-serif; background: #fff; }
+    #controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+    button { font: inherit; padding: 4px 10px; }
+    #status { color: #555; }
+    /* The card is a fixed 929x800; give the renderer exactly that much room. */
+    #frame { width: 929px; height: 800px; border: 1px dashed #ccc; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="again">Post same payload again (expect no-op)</button>
+    <button id="changed">Post changed payload (expect re-render)</button>
+    <button id="count">Count iframes in renderer</button>
+    <span id="status"></span>
+  </div>
+  <iframe id="frame" src="../langsmith_chart_renderer.html"></iframe>
+
+  <script>
+    var frame = document.getElementById('frame');
+    var status = document.getElementById('status');
+    var payload = null;
+
+    function post(chart_json) {
+      frame.contentWindow.postMessage({ type: 'output', data: { chart_json: chart_json } }, '*');
+    }
+
+    function say(text) { status.textContent = text; }
+
+    fetch('sample_chart_json.json')
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        payload = json;
+        if (frame.contentDocument.readyState === 'complete') post(payload);
+        else frame.addEventListener('load', function () { post(payload); });
+        say('posted initial payload');
+      });
+
+    document.getElementById('again').onclick = function () {
+      post(payload);
+      say('re-posted identical payload — iframe count should stay 1 and not reload');
+    };
+
+    document.getElementById('changed').onclick = function () {
+      var next = JSON.parse(JSON.stringify(payload));
+      next.wrapper_data.title = 'Changed title — re-rendered at click time';
+      post(next);
+      say('posted changed payload — title should update, still 1 iframe');
+    };
+
+    document.getElementById('count').onclick = function () {
+      var doc = frame.contentDocument;
+      var inner = doc.querySelectorAll('iframe');
+      var card = inner[0] && inner[0].contentDocument;
+      say('iframes in renderer: ' + inner.length +
+          ' | card title: ' + (card ? JSON.stringify(card.querySelector('.title').textContent) : 'n/a') +
+          ' | Aeonik loaded: ' + (card ? card.fonts.check('500 30px Aeonik') : 'n/a'));
+    };
+  </script>
+</body>
+</html>
