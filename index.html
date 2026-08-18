@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>chart_renderers</title>
+  <style>
+    body { max-width: 46rem; margin: 3rem auto; padding: 0 1.25rem;
+           font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1a1a1a; }
+    h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+    p.lede { color: #555; margin-top: 0; }
+    ul { padding-left: 1.1rem; }
+    li { margin-bottom: .6rem; }
+    code { background: #f2f2ef; padding: .1em .35em; border-radius: 3px; font-size: .9em; }
+    footer { margin-top: 2.5rem; color: #777; font-size: .875rem; border-top: 1px solid #e5e5e2; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>chart_renderers</h1>
+  <p class="lede">Custom output renderers for LangSmith runs.</p>
+
+  <ul>
+    <li>
+      <a href="langsmith_chart_renderer.html">langsmith_chart_renderer.html</a> —
+      the renderer itself. Blank on its own; it draws the chart card only once LangSmith
+      posts a run output. Point LangSmith's custom renderer at this URL.
+    </li>
+    <li>
+      <a href="fixtures/harness.html">fixtures/harness.html</a> —
+      local test harness. Posts a sample payload into the renderer and exercises the
+      dedup and re-render paths.
+    </li>
+  </ul>
+
+  <p>
+    The renderer expects
+    <code>{ type: "output", data: { chart_json, wrapper_json } }</code> via
+    <code>postMessage</code>: <code>chart_json</code> is the Flourish spec,
+    <code>wrapper_json</code> the card's title and subtitle.
+  </p>
+
+  <footer>
+    <code>langsmith_chart_renderer.html</code> is generated from <code>chart.html</code>,
+    <code>aeonik-medium.woff2</code> and <code>renderer_shell.html</code> by
+    <code>build_renderer.py</code> — edit those, then re-run
+    <code>python3 build_renderer.py</code> and commit the result.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "chart_json": {
+    "base_visualisation_id": "27816659",
+    "bindings": {
+      "data": {
+        "label": "fundyear",
+        "value": [
+          "total"
+        ]
+      }
+    },
+    "data": {
+      "data": [
+        {
+          "total": "1196269569",
+          "row_count": "26641",
+          "fundyear": "2021"
+        },
+        {
+          "total": "1314297362",
+          "row_count": "33366",
+          "fundyear": "2022"
+        },
+        {
+          "total": "1427313246",
+          "row_count": "36187",
+          "fundyear": "2023"
+        },
+        {
+          "total": "1567501020",
+          "row_count": "32246",
+          "fundyear": "2024"
+        }
+      ]
+    },
+    "metadata": {
+      "data": {
+        "total": {
+          "type_id": "number$comma_point",
+          "type": "number"
+        },
+        "row_count": {
+          "type_id": "number$comma_point",
+          "type": "number"
+        },
+        "fundyear": {
+          "type_id": "datetime$%Y",
+          "type": "datetime",
+          "output_format_id": "datetime$%Y"
+        }
+      }
+    },
+    "state": {}
+  },
+  "wrapper_json": {
+    "title": "Katy ISD's instruction spending rose from $1.20 billion in 2021 to $1.57 billion in 2024.",
+    "subtitle": "Instruction spending by fund year, Katy ISD, 2021–2024"
+  }
+}
