@@ -26,13 +26,13 @@
     var status = document.getElementById('status');
     var payload = null;
 
-    function post(chart_json) {
-      frame.contentWindow.postMessage({ type: 'output', data: { chart_json: chart_json } }, '*');
+    function post(data) {
+      frame.contentWindow.postMessage({ type: 'output', data: data }, '*');
     }
 
     function say(text) { status.textContent = text; }
 
-    fetch('sample_chart_json.json')
+    fetch('sample_output_data.json')
       .then(function (r) { return r.json(); })
       .then(function (json) {
         payload = json;
@@ -48,7 +48,7 @@
 
     document.getElementById('changed').onclick = function () {
       var next = JSON.parse(JSON.stringify(payload));
-      next.wrapper_data.title = 'Changed title — re-rendered at click time';
+      next.wrapper_json.title = 'Changed title — re-rendered at click time';
       post(next);
       say('posted changed payload — title should update, still 1 iframe');
     };

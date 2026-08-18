@@ -20,7 +20,10 @@
      * LangSmith loads this page in an iframe and posts each run's output via
      * window.postMessage with the shape:
      *
-     *   { type: "output", data: { chart_json: { wrapper_data, chart_data } } }
+     *   { type: "output", data: { chart_json: {}, wrapper_json: {} } }
+     *
+     * chart_json fills chart.html's $chart_data (the Flourish spec) and
+     * wrapper_json fills $wrapper_data (the card's title/subtitle).
      *
      * CHART_TEMPLATE is chart.html with the Aeonik woff2 already inlined at build
      * time; $wrapper_data / $chart_data / $flourish_api_key are filled in here and
@@ -52,16 +55,18 @@
       var msg = event.data;
       if (!msg || msg.type !== 'output') return;
 
-      var payload = (msg.data || {}).chart_json;
-      if (!payload) return;
+      var data = msg.data || {};
+      var chart_json = data.chart_json;
+      if (!chart_json) return;
+      var wrapper_json = data.wrapper_json || {};
 
-      var key = JSON.stringify(payload);
+      var key = JSON.stringify([chart_json, wrapper_json]);
       if (key === lastKey) return;
       lastKey = key;
 
       var html = fill(CHART_TEMPLATE, {
-        wrapper_data:     jsonLiteral(payload.wrapper_data || {}),
-        chart_data:       jsonLiteral(payload.chart_data || {}),
+        wrapper_data:     jsonLiteral(wrapper_json),
+        chart_data:       jsonLiteral(chart_json),
         flourish_api_key: FLOURISH_API_KEY,
       });
 
